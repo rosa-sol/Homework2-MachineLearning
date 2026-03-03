@@ -56,7 +56,7 @@ def train_frcnn(model, train_ds, val_ds, device="cpu", batch_size=2, epochs=15,
     return time.time() - t0, best_map
 
 
-def train_yolov8_cpu(yolo_model, data_yaml, epochs=15, imgsz=384, batch=8,
+def train_yolov8(yolo_model, data_yaml, epochs=15, imgsz=384, batch=8,
                      patience=3, project="outputs", name="yolov8n_pets_images_only"):
     t0 = time.time()
     yolo_model.train(
@@ -64,7 +64,8 @@ def train_yolov8_cpu(yolo_model, data_yaml, epochs=15, imgsz=384, batch=8,
         epochs=epochs,
         imgsz=imgsz,
         batch=batch,
-        device="cpu",
+        device=0 if device =="cuda" else "cpu",
+        amp = amp,
         workers=0,
         pretrained=True,
         patience=patience,
