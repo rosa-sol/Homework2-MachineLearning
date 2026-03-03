@@ -2,7 +2,7 @@
 
 ## Repository Structure
 
-
+"""
 Homework2/
 ├─ Penn-Fudan/
 │ ├─ dataset.py # PennFudanDataset + collate_fn (mask → boxes)
@@ -25,7 +25,7 @@ Homework2/
 │ └─ utils_seed_split.py # seed + split (shared)
 
 ---
-
+"""
 ## Requirements
 
 - Python 3.10+ (tested with Python 3.12)
@@ -36,7 +36,7 @@ Homework2/
 - tqdm
 - Pillow
 
-Install dependencies:
+### Install dependencies:
 
 ```bash
 pip install torch torchvision ultralytics numpy tqdm pillow
@@ -114,3 +114,4 @@ If you see:
 AttributeError: 'numpy.ndarray' object has no attribute 'ptp'
 replace:
 gray.ptp() with np.ptp(gray) in the pseudo-box code.
+'''
