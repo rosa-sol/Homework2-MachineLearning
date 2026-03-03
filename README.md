@@ -255,8 +255,10 @@ This comparison demonstrates classical trade-offs between R-CNN and YOLOv8n.
 
 - **R-CNN** → Higher precision and stable localization.
 - **YOLOv8n** → Dramatically faster inference with strong overall accuracy.
+  
+This study demonstrates the fundamental trade-off between two-stage and one-stage object detection architectures. Faster R-CNN consistently achieved higher precision and more stable localization due to its region proposal and refinement stages, making it well-suited for tasks where minimizing false positives is critical. However, this added refinement comes at the cost of increased computational complexity and slower inference speed.
 
-Under GPU execution at 512×512 resolution, both models achieve high detection performance. For real-time or deployment-focused systems, YOLOv8n provides an optimal balance between speed and accuracy.
+In contrast, YOLOv8n delivered competitive—and in some cases higher—mAP@0.5 while dramatically improving training and inference speed. Its single-stage design enables efficient end-to-end optimization and strong performance even with moderate annotation noise. Overall, Faster R-CNN is preferable when precision is the priority, while YOLOv8n provides the best balance of accuracy and speed for real-time or deployment-focused applications.
 
 ---
 
