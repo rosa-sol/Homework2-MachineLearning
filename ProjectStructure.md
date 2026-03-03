@@ -23,16 +23,13 @@ Homework2/
 │  ├─ metrics_timing.py     # IoU/AP utilities (shared)
 │  └─ utils_seed_split.py   # Seed + split (shared)
 │
-├─ data/
+├─ data/                    # Not in repo, but on device running code
 │  ├─ PennFudanPed/
 │  │  ├─ PNGImages/
 │  │  └─ PedMasks/
 │  └─ Oxford-IIIT Pet/
 │     └─ images/
-│
-└─ outputs/
-   ├─ yolo_pennfudan/
-   └─ yolo_pets_*/
+
 ```
 
 ---
@@ -52,7 +49,6 @@ Homework2/
 ```bash
 pip install torch torchvision ultralytics numpy tqdm pillow
 ```
-
 ---
 
 # Dataset Setup
