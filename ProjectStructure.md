@@ -1,34 +1,45 @@
 # Project Setup & Structure
 
 ## Repository Structure
-
-"""
+```
 Homework2/
 ├─ Penn-Fudan/
-│ ├─ dataset.py # PennFudanDataset + collate_fn (mask → boxes)
-│ ├─ train.py # training loops for Faster R-CNN + YOLOv8n
-│ ├─ eval.py # evaluation (mAP@0.5, precision, recall, speed)
-│ ├─ main.py # runs Penn-Fudan experiment end-to-end
-│ ├─ rcnn.py # Faster R-CNN model builder (transfer learning)
-│ ├─ yolov8.py # YOLOv8 model builder + Penn-Fudan → YOLO export
-│ ├─ metrics_timing.py # IoU matching + AP/PR utilities
-│ └─ utils_seed_split.py # set_seed + train/val/test split
+│  ├─ dataset.py            # PennFudanDataset + collate_fn (mask → boxes)
+│  ├─ train.py              # Training loops for Faster R-CNN + YOLOv8n
+│  ├─ eval.py               # Evaluation (mAP@0.5, precision, recall, speed)
+│  ├─ main.py               # Runs Penn-Fudan experiment end-to-end
+│  ├─ rcnn.py               # Faster R-CNN model builder
+│  ├─ yolov8.py             # YOLOv8 model builder + Penn-Fudan export
+│  ├─ metrics_timing.py     # IoU matching + AP/PR utilities
+│  └─ utils_seed_split.py   # Seed + train/val/test split
 │
 ├─ Oxford-IIIT Pet Dataset/
-│ ├─ pet_dataset.py # images-only dataset + pseudo boxes + collate_fn
-│ ├─ pet_train.py # training loops for pet experiment
-│ ├─ pet_yolo8.py # YOLOv8 model builder + Pets → YOLO export
-│ ├─ main_pet.py # runs Pets (5-breed subset) experiment end-to-end
-│ ├─ rcnn.py # Faster R-CNN model builder (shared)
-│ ├─ eval.py # evaluation (shared)
-│ ├─ metrics_timing.py # IoU/AP utilities (shared)
-│ └─ utils_seed_split.py # seed + split (shared)
+│  ├─ pet_dataset.py        # Images-only dataset + pseudo boxes
+│  ├─ pet_train.py          # Training loops for pet experiment
+│  ├─ pet_yolo8.py          # YOLOv8 model builder + Pets export
+│  ├─ main_pet.py           # Runs Pets experiment
+│  ├─ rcnn.py               # Faster R-CNN model builder (shared)
+│  ├─ eval.py               # Evaluation (shared)
+│  ├─ metrics_timing.py     # IoU/AP utilities (shared)
+│  └─ utils_seed_split.py   # Seed + split (shared)
+│
+├─ data/
+│  ├─ PennFudanPed/
+│  │  ├─ PNGImages/
+│  │  └─ PedMasks/
+│  └─ Oxford-IIIT Pet/
+│     └─ images/
+│
+└─ outputs/
+   ├─ yolo_pennfudan/
+   └─ yolo_pets_*/
+```
 
 ---
-"""
-## Requirements
 
-- Python 3.10+ (tested with Python 3.12)
+# Requirements
+
+- Python 3.10+
 - PyTorch
 - Torchvision
 - Ultralytics (YOLOv8)
@@ -36,57 +47,77 @@ Homework2/
 - tqdm
 - Pillow
 
-### Install dependencies:
+## Install Dependencies
 
 ```bash
 pip install torch torchvision ultralytics numpy tqdm pillow
-Dataset Setup
-1) Penn-Fudan
+```
+
+---
+
+# Dataset Setup
+
+## 1) Penn-Fudan
 
 Place the dataset at:
 
+```
 data/PennFudanPed/
 ├─ PNGImages/
 └─ PedMasks/
-2) Oxford-IIIT Pet (images-only)
+```
+
+---
+
+## 2) Oxford-IIIT Pet (Images-Only)
 
 Place the dataset at:
 
+```
 data/Oxford-IIIT Pet/
 └─ images/
+```
 
-If your pets folder is elsewhere (e.g., OneDrive path), update pets_root in main_pet.py.
+If your pets folder is located elsewhere (e.g., OneDrive), update `pets_root` inside `main_pet.py`.
 
-Running Experiments
-Penn-Fudan (Pedestrian Detection)
+---# Training Setup
 
-From the Homework2 directory:
+- GPU acceleration (primary experiments)
+- Image size: 512×512
+- CPU fallback: 384×384
+- Transfer learning enabled
+- Early stopping (patience = 3)
 
+### Penn-Fudan
+- 10–15 epochs
+
+### Pets Subset
+- 15–20 epochs
+
+
+# Running Experiments
+
+## Penn-Fudan (Pedestrian Detection)
+
+From the `Homework2` directory:
+
+```bash
 python Penn-Fudan/main.py
-Oxford-IIIT Pets (5-Breed Subset Detection)
+```
 
-From the Homework2 directory:
+---
 
-python Oxford-IIIT\ Pet\ Dataset/main_pet.py
-GPU vs CPU Notes
+## Oxford-IIIT Pets (5-Breed Subset Detection)
 
-Primary experiments were run on GPU at 512×512 resolution.
+From the `Homework2` directory:
 
-The pipeline can run on CPU, but for speed/memory reasons the image size is typically reduced (e.g., 384×384).
+```bash
+python "Oxford-IIIT Pet Dataset/main_pet.py"
+```
 
-If you are CPU-only, reduce:
+---
 
-img_size in main.py / main_pet.py
-
-YOLO imgsz argument in training
-
-Outputs
-
-During YOLO training/export, YOLO-formatted datasets and training artifacts are written to:
-
-outputs/
-
-Final results are printed as tables including:
+### Final results are printed as tables including:
 
 mAP@0.5
 
@@ -98,7 +129,7 @@ Training time (seconds)
 
 Inference speed (images/second)
 
-Common Issues
+## Common Issues
 Import/module not found
 
 Make sure the filename matches the import exactly.
@@ -110,7 +141,7 @@ If your PennFudanDataset does not accept cache, remove cache=True from main.py o
 
 NumPy .ptp() error
 
-If you see:
+## If you see:
 AttributeError: 'numpy.ndarray' object has no attribute 'ptp'
 replace:
 gray.ptp() with np.ptp(gray) in the pseudo-box code.
