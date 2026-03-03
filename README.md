@@ -165,7 +165,7 @@ YOLO predicts bounding boxes and class probabilities simultaneously, enabling hi
 
 # Detailed Discussion
 
-## 1️⃣ Penn-Fudan Interpretation
+## Penn-Fudan Interpretation
 
 This dataset contains a single object class and relatively consistent scenes.
 
@@ -190,7 +190,7 @@ This dataset contains a single object class and relatively consistent scenes.
 
 ---
 
-## 2️⃣ Oxford-IIIT Pet Interpretation
+## Oxford-IIIT Pet Interpretation
 
 This dataset is more complex:
 
@@ -221,7 +221,7 @@ YOLO’s direct regression approach appears more robust under moderate localizat
 
 ---
 
-## 3️⃣ Speed–Accuracy Trade-Off
+## Speed–Accuracy Trade-Off
 
 | Model        | Accuracy | Precision | Speed |
 |-------------|----------|-----------|-------|
