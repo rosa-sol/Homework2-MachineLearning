@@ -1,4 +1,4 @@
-# Object Detection Comparison: Faster R-CNN vs YOLOv8n  
+# Report: Object Detection Comparison: R-CNN vs YOLOv8n  
 ## Penn-Fudan Pedestrian & Oxford-IIIT Pet (5-Breed Subset)
 
 ---
