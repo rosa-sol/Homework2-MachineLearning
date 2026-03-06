@@ -14,9 +14,14 @@ def eval_frcnn_map50(model, ds, device="cpu", score_thresh=0.4, iou_thresh=0.5, 
     Lightweight mAP@0.5 (VOC-style AP from PR curve), plus Precision/Recall and inference speed.
     """
     loader = DataLoader(
-        ds, batch_size=1, shuffle=False, num_workers=num_workers,
-        collate_fn=collate_fn
+        ds,
+        batch_size=1,
+        shuffle=False,
+        num_workers=num_workers,
+        collate_fn=collate_fn,
+        pin_memory=(device == "cuda")
     )
+
     model.to(device)
     model.eval()
 
@@ -28,7 +33,7 @@ def eval_frcnn_map50(model, ds, device="cpu", score_thresh=0.4, iou_thresh=0.5, 
     n_images = 0
 
     for images, targets in tqdm(loader, desc="FRCNN eval", leave=False):
-        images = [img.to(device) for img in images]
+        images = [img.to(device, non_blocking=True) for img in images]
         outputs = model(images)
 
         out = outputs[0]
@@ -67,51 +72,53 @@ def eval_frcnn_map50(model, ds, device="cpu", score_thresh=0.4, iou_thresh=0.5, 
 def _extract_ultralytics_metrics(metrics_obj):
     """
     Ultralytics versions differ. Try common attribute paths.
-    Returns (map50, precision, recall) or (None,None,None) if not found.
+    Returns (map50, precision, recall) or (None, None, None) if not found.
     """
-    # Common newer: metrics_obj.box.map50 / mp / mr
     for box_attr in ("box", "bbox"):
         box = getattr(metrics_obj, box_attr, None)
         if box is not None:
             map50 = getattr(box, "map50", None)
-            mp = getattr(box, "mp", None)   # mean precision
-            mr = getattr(box, "mr", None)   # mean recall
+            mp = getattr(box, "mp", None)
+            mr = getattr(box, "mr", None)
             if map50 is not None and mp is not None and mr is not None:
                 return float(map50), float(mp), float(mr)
 
-    # Some versions: metrics_obj.results_dict
     rd = getattr(metrics_obj, "results_dict", None)
     if isinstance(rd, dict):
-        # keys vary; try a few
         candidates_map50 = ["metrics/mAP50(B)", "metrics/mAP50", "map50"]
         candidates_p = ["metrics/precision(B)", "metrics/precision", "precision"]
         candidates_r = ["metrics/recall(B)", "metrics/recall", "recall"]
+
         map50 = next((rd.get(k) for k in candidates_map50 if k in rd), None)
         p = next((rd.get(k) for k in candidates_p if k in rd), None)
         r = next((rd.get(k) for k in candidates_r if k in rd), None)
+
         if map50 is not None and p is not None and r is not None:
             return float(map50), float(p), float(r)
 
     return None, None, None
 
 
-def eval_yolov8_cpu(yolo_model, data_yaml, imgsz=384, batch=8):
+def eval_yolov8(yolo_model, data_yaml, imgsz=384, batch=8, device="cpu"):
     """
     Uses Ultralytics built-in metrics for mAP50/P/R and measures inference speed (img/s) on test set.
+    Works on CPU or GPU.
     """
-    # val metrics
+    yolo_device = 0 if device == "cuda" and torch.cuda.is_available() else "cpu"
+    workers = 2 if yolo_device != "cpu" else 0
+
+    # validation metrics
     metrics = yolo_model.val(
         data=data_yaml,
         imgsz=imgsz,
         batch=batch,
-        device="cpu",
-        workers=0,
+        device=yolo_device,
+        workers=workers,
         verbose=False
     )
     map50, p, r = _extract_ultralytics_metrics(metrics)
 
     # inference speed on test folder
-    # data_yaml has: path: OUTROOT, test: images/test
     from pathlib import Path
     outroot = Path(data_yaml).parent
     test_folder = outroot / "images" / "test"
@@ -120,7 +127,7 @@ def eval_yolov8_cpu(yolo_model, data_yaml, imgsz=384, batch=8):
     preds = yolo_model.predict(
         source=str(test_folder),
         imgsz=imgsz,
-        device="cpu",
+        device=yolo_device,
         verbose=False
     )
     preds = list(preds)
