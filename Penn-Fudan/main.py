@@ -6,7 +6,7 @@ from dataset import PennFudanDataset
 from rcnn import build_frcnn
 from yolov8 import build_yolov8, export_pennfudan_to_yolo
 from train import train_frcnn, train_yolov8
-from eval import eval_frcnn_map50, eval_yolov8_cpu
+from eval import eval_frcnn_map50, eval_yolov8
 
 
 def main():
@@ -93,7 +93,8 @@ def main():
     # If your train/eval helpers support a device argument, pass it through.
     # If not, you should update those helper functions too.
     yolo_train_time = train_yolov8(
-    yolo, data_yaml,
+    yolo,
+    data_yaml,
     epochs=yolo_epochs,
     imgsz=yolo_imgsz,
     batch=yolo_batch,
@@ -101,10 +102,14 @@ def main():
     project="outputs",
     name="yolov8n_gpu" if device == "cuda" else "yolov8n_cpu",
     device=device
-)
+    )
 
-    yolo_map50, yolo_p, yolo_r, yolo_ips, yolo_metrics_obj = eval_yolov8_cpu(
-        yolo, data_yaml, imgsz=yolo_imgsz, batch=yolo_batch
+    yolo_map50, yolo_p, yolo_r, yolo_ips, yolo_metrics_obj = eval_yolov8(
+    yolo,
+    data_yaml,
+    imgsz=yolo_imgsz,
+    batch=yolo_batch,
+    device=device
     )
 
     # -----------------------------
