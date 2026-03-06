@@ -5,8 +5,8 @@ from utils_seed_split import set_seed, split_indices
 from pet_dataset import OxfordPetsImagesOnlyDetectionSubset
 from rcnn import build_frcnn
 from pet_yolov8 import build_yolov8, export_pets_images_only_to_yolo
-from pet_train import train_frcnn, train_yolov8  # <-- rename from train_yolov8_cpu to train_yolov8
-from eval import eval_frcnn_map50, eval_yolov8  # <-- rename from eval_yolov8_cpu to eval_yolov8
+from pet_train import train_frcnn, train_yolov8  
+from eval import eval_frcnn_map50, eval_yolov8  
 
 
 def main():
