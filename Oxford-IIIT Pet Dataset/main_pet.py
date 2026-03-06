@@ -15,7 +15,7 @@ def main():
     seed = 42
     set_seed(seed)
 
-    # ✅ GPU if available
+    # GPU if available
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     pets_root = r"C:\Users\solisrv\OneDrive - beloit.edu\Desktop\Homework2\Oxford-IIIT Pet"
@@ -23,18 +23,18 @@ def main():
     # choose 5 breeds that appear in your filenames
     BREEDS_5 = ["Abyssinian", "american_bulldog", "beagle", "Bengal", "Birman"]
 
-    # ✅ Use 512 for GPU, smaller for CPU fallback
+    # Use 512 for GPU, smaller for CPU fallback
     img_size = 512 if device == "cuda" else 384
 
     # Pets subset: 15–20 epochs
     max_epochs = 20
     patience = 3
 
-    # ✅ Batch sizes: higher on GPU, conservative on CPU
+    # Batch sizes: higher on GPU, conservative on CPU
     frcnn_batch = 4 if device == "cuda" else 2
     yolo_batch = 16 if device == "cuda" else 8
 
-    # ✅ Caching helps CPU, not needed on GPU
+    # Caching helps CPU, not needed on GPU
     cache_ds = (device == "cpu")
 
     tmp = OxfordPetsImagesOnlyDetectionSubset(pets_root, breeds=BREEDS_5, img_size=img_size, cache=cache_ds)
@@ -45,7 +45,7 @@ def main():
     val_ds   = OxfordPetsImagesOnlyDetectionSubset(pets_root, BREEDS_5, indices=val_idx,   img_size=img_size, cache=cache_ds)
     test_ds  = OxfordPetsImagesOnlyDetectionSubset(pets_root, BREEDS_5, indices=test_idx,  img_size=img_size, cache=cache_ds)
 
-    # ✅ Faster R-CNN: 5 breeds + background => 6
+    # Faster R-CNN: 5 breeds + background => 6
     # cpu_fast=True is only useful on CPU; disable on GPU
     frcnn = build_frcnn(
         num_classes=len(BREEDS_5) + 1,
@@ -67,7 +67,7 @@ def main():
         frcnn, test_ds, device=device, score_thresh=0.4
     )
 
-    # ✅ YOLO export + train + eval
+    # YOLO export + train + eval
     yolo_export_root = "outputs/yolo_pets_images_only_5"
     data_yaml, total_items = export_pets_images_only_to_yolo(
         pets_root, yolo_export_root, BREEDS_5,
@@ -77,7 +77,7 @@ def main():
 
     yolo = build_yolov8("yolov8n.pt")
 
-    # ✅ Train YOLO on GPU if available
+    # Train YOLO on GPU if available
     yolo_time = train_yolov8(
         yolo,
         data_yaml,
