@@ -21,8 +21,8 @@ def train_frcnn(
     score_thresh=0.4,
 ):
     """
-    CPU-friendly transfer learning training:
-    - typically backbone frozen (set in build_frcnn)
+    Faster R-CNN training:
+    - works on CPU or GPU
     - validate each epoch, early stop on val mAP@0.5
     """
     from eval import eval_frcnn_map50  # local import to avoid circular imports
@@ -32,8 +32,10 @@ def train_frcnn(
         batch_size=batch_size,
         shuffle=True,
         num_workers=num_workers,
-        collate_fn=collate_fn
+        collate_fn=collate_fn,
+        pin_memory=(device == "cuda")
     )
+
     model.to(device)
 
     params = [p for p in model.parameters() if p.requires_grad]
@@ -49,8 +51,8 @@ def train_frcnn(
         loss_sum = 0.0
 
         for images, targets in tqdm(train_loader, desc=f"FRCNN train e{epoch+1}", leave=False):
-            images = [img.to(device) for img in images]
-            targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
+            images = [img.to(device, non_blocking=True) for img in images]
+            targets = [{k: v.to(device, non_blocking=True) for k, v in t.items()} for t in targets]
 
             optimizer.zero_grad(set_to_none=True)
             loss_dict = model(images, targets)
@@ -73,7 +75,7 @@ def train_frcnn(
         if val_map50 > best_map + min_delta:
             best_map = val_map50
             bad_epochs = 0
-            best_state = {k: v.cpu().clone() for k, v in model.state_dict().items()}
+            best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
         else:
             bad_epochs += 1
             if early_stopping and bad_epochs >= patience:
@@ -87,27 +89,31 @@ def train_frcnn(
     return train_time, best_map
 
 
-def train_yolov8_cpu(
+def train_yolov8(
     yolo_model,
     data_yaml,
     epochs=15,          # Penn-Fudan: 10–15 max
     imgsz=384,
     batch=8,
-    patience=3,         # early stopping
+    patience=3,
     project="outputs",
-    name="yolov8n_cpu"
+    name="yolov8n",
+    device="cpu"
 ):
     """
-    Ultralytics YOLOv8 training on CPU with pretrained weights (transfer learning).
+    Ultralytics YOLOv8 training on CPU or GPU with pretrained weights.
     """
+    # Ultralytics expects 0 / 1 / ... for GPU, or "cpu"
+    yolo_device = 0 if device == "cuda" and torch.cuda.is_available() else "cpu"
+
     t0 = time.time()
     yolo_model.train(
         data=data_yaml,
         epochs=epochs,
         imgsz=imgsz,
         batch=batch,
-        device="cpu",
-        workers=0,
+        device=yolo_device,
+        workers=2 if yolo_device != "cpu" else 0,
         pretrained=True,
         patience=patience,
         project=project,
